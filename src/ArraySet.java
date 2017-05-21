@@ -21,6 +21,16 @@ public class ArraySet<E> extends AbstractSet<E> {
             if (!items.contains(item)) items.add(item);
     }
 
+    public E get (int index) throws IndexOutOfBoundsException {
+        return items.get(index);
+    }
+
+    public boolean containsAny (Collection<?> collection) {
+        for (Object item: collection)
+            if (this.contains(item)) return true;
+        return false;
+    }
+
     @Override
     public boolean add(E item) {
         if (items.contains(item)) return false;
