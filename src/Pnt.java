@@ -90,5 +90,31 @@ public class Pnt {
         Pnt sum = this.add(point);
         double dot = diff.dot(sum);
         return diff.extend(-dot / 2);
-    }   
+    }
+
+    public static double determinant (Pnt[] matrix) {
+        if (matrix.length != matrix[0].dimension())
+            throw new IllegalArgumentException("Matrix is not square");
+        boolean[] columns = new boolean[matrix.length];
+        for (int i = 0; i < matrix.length; i++) columns[i] = true;
+        try {return determinant(matrix, 0, columns);}
+        catch (ArrayIndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Matrix is wrong shape");
+        }
+    }
+
+    private static double determinant(Pnt[] matrix, int row, boolean[] columns){
+        if (row == matrix.length) return 1;
+        double sum = 0;
+        int sign = 1;
+        for (int col = 0; col < columns.length; col++) {
+            if (!columns[col]) continue;
+            columns[col] = false;
+            sum += sign * matrix[row].coordinates[col] *
+                    determinant(matrix, row+1, columns);
+            columns[col] = true;
+            sign = -sign;
+        }
+        return sum;
+    }
 }
