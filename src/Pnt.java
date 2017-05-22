@@ -45,4 +45,42 @@ public class Pnt {
     public int dimension () {
         return coordinates.length;
     }
+
+    public int dimCheck (Pnt p) {
+        int len = this.coordinates.length;
+        if (len != p.coordinates.length)
+            throw new IllegalArgumentException("Dimension mismatch");
+        return len;
+    }
+
+    public Pnt extend (double... coords) {
+        double[] result = new double[coordinates.length + coords.length];
+        System.arraycopy(coordinates, 0, result, 0, coordinates.length);
+        System.arraycopy(coords, 0, result, coordinates.length, coords.length);
+        return new Pnt(result);
+    }
+
+    public double dot (Pnt p) {
+        int len = dimCheck(p);
+        double sum = 0;
+        for (int i = 0; i < len; i++)
+            sum += this.coordinates[i] * p.coordinates[i];
+        return sum;
+    }
+
+    public Pnt subtract (Pnt p) {
+        int len = dimCheck(p);
+        double[] coords = new double[len];
+        for (int i = 0; i < len; i++)
+            coords[i] = this.coordinates[i] - p.coordinates[i];
+        return new Pnt(coords);
+    }
+
+    public Pnt add (Pnt p) {
+        int len = dimCheck(p);
+        double[] coords = new double[len];
+        for (int i = 0; i < len; i++)
+            coords[i] = this.coordinates[i] + p.coordinates[i];
+        return new Pnt(coords);
+    }
 }
