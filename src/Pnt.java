@@ -83,4 +83,12 @@ public class Pnt {
             coords[i] = this.coordinates[i] + p.coordinates[i];
         return new Pnt(coords);
     }
+
+    public Pnt bisector (Pnt point) {
+        dimCheck(point);
+        Pnt diff = this.subtract(point);
+        Pnt sum = this.add(point);
+        double dot = diff.dot(sum);
+        return diff.extend(-dot / 2);
+    }   
 }
