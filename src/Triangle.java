@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -10,7 +12,16 @@ public class Triangle extends ArraySet<Pnt>  {
     private static int idGenerator = 0;
     public static boolean moreInfo = false;
 
-    
+    public Triangle (Pnt... vertices) {
+        this(Arrays.asList(vertices));
+    }
+
+    public Triangle (Collection<? extends Pnt> collection) {
+        super(collection);
+        idNumber = idGenerator++;
+        if (this.size() != 3)
+            throw new IllegalArgumentException("Triangle must have 3 vertices");
+    }
 
     @Override
     public String toString () {
