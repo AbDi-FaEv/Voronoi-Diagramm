@@ -117,4 +117,108 @@ public class Pnt {
         }
         return sum;
     }
+
+    public static Pnt cross (Pnt[] matrix) {
+        int len = matrix.length + 1;
+        if (len != matrix[0].dimension())
+            throw new IllegalArgumentException("Dimension mismatch");
+        boolean[] columns = new boolean[len];
+        for (int i = 0; i < len; i++) columns[i] = true;
+        double[] result = new double[len];
+        int sign = 1;
+        try {
+            for (int i = 0; i < len; i++) {
+                columns[i] = false;
+                result[i] = sign * determinant(matrix, 0, columns);
+                columns[i] = true;
+                sign = -sign;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Matrix is wrong shape");
+        }
+        return new Pnt(result);
+    }
+
+    public static double content (Pnt[] simplex) {
+        Pnt[] matrix = new Pnt[simplex.length];
+        for (int i = 0; i < matrix.length; i++)
+            matrix[i] = simplex[i].extend(1);
+        int fact = 1;
+        for (int i = 1; i < matrix.length; i++) fact = fact*i;
+        return determinant(matrix) / fact;
+    }
+
+    public int[] relation (Pnt[] simplex) {
+        int dim = simplex.length - 1;
+        if (this.dimension() != dim)
+            throw new IllegalArgumentException("Dimension mismatch");
+
+
+        Pnt[] matrix = new Pnt[dim+1];
+
+        double[] coords = new double[dim+2];
+        for (int j = 0; j < coords.length; j++) coords[j] = 1;
+        matrix[0] = new Pnt(coords);
+
+        for (int i = 0; i < dim; i++) {
+            coords[0] = this.coordinates[i];
+            for (int j = 0; j < simplex.length; j++)
+                coords[j+1] = simplex[j].coordinates[i];
+            matrix[i+1] = new Pnt(coords);
+        }
+
+
+        Pnt vector = cross(matrix);
+        double content = vector.coordinates[0];
+        int[] result = new int[dim+1];
+        for (int i = 0; i < result.length; i++) {
+            double value = vector.coordinates[i+1];
+            if (Math.abs(value) <= 1.0e-6 * Math.abs(content)) result[i] = 0;
+            else if (value < 0) result[i] = -1;
+            else result[i] = 1;
+        }
+        if (content < 0) {
+            for (int i = 0; i < result.length; i++)
+                result[i] = -result[i];
+        }
+        if (content == 0) {
+            for (int i = 0; i < result.length; i++)
+                result[i] = Math.abs(result[i]);
+        }
+        return result;
+    }
+
+
+    public Pnt isOutside (Pnt[] simplex) {
+        int[] result = this.relation(simplex);
+        for (int i = 0; i < result.length; i++) {
+            if (result[i] > 0) return simplex[i];
+        }
+        return null;
+    }
+
+    public int vsCircumcircle (Pnt[] simplex) {
+        Pnt[] matrix = new Pnt[simplex.length + 1];
+        for (int i = 0; i < simplex.length; i++)
+            matrix[i] = simplex[i].extend(1, simplex[i].dot(simplex[i]));
+        matrix[simplex.length] = this.extend(1, this.dot(this));
+        double d = determinant(matrix);
+        int result = (d < 0)? -1 : ((d > 0)? +1 : 0);
+        if (content(simplex) < 0) result = - result;
+        return result;
+    }
+
+    public static Pnt circumcenter (Pnt[] simplex) {
+        int dim = simplex[0].dimension();
+        if (simplex.length - 1 != dim)
+            throw new IllegalArgumentException("Dimension mismatch");
+        Pnt[] matrix = new Pnt[dim];
+        for (int i = 0; i < dim; i++)
+            matrix[i] = simplex[i].bisector(simplex[i+1]);
+        Pnt hCenter = cross(matrix);      // Center in homogeneous coordinates
+        double last = hCenter.coordinates[dim];
+        double[] result = new double[dim];
+        for (int i = 0; i < dim; i++) result[i] = hCenter.coordinates[i] / last;
+        return new Pnt(result);
+    }
 }
