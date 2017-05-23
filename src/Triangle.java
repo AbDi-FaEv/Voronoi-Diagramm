@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Created by dimad on 22.05.2017.
@@ -21,6 +22,32 @@ public class Triangle extends ArraySet<Pnt>  {
         idNumber = idGenerator++;
         if (this.size() != 3)
             throw new IllegalArgumentException("Triangle must have 3 vertices");
+    }
+
+    public Pnt getVertexButNot (Pnt... badVertices) {
+        Collection<Pnt> bad = Arrays.asList(badVertices);
+        for (Pnt v: this) if (!bad.contains(v)) return v;
+        throw new NoSuchElementException("No vertex found");
+    }
+
+    public boolean isNeighbor (Triangle triangle) {
+        int count = 0;
+        for (Pnt vertex: this)
+            if (!triangle.contains(vertex)) count++;
+        return count == 1;
+    }
+
+    public ArraySet<Pnt> facetOpposite (Pnt vertex) {
+        ArraySet<Pnt> facet = new ArraySet<Pnt>(this);
+        if (!facet.remove(vertex))
+            throw new IllegalArgumentException("Vertex not in triangle");
+        return facet;
+    }
+
+    public Pnt getCircumcenter () {
+        if (circumcenter == null)
+            circumcenter = Pnt.circumcenter(this.toArray(new Pnt[0]));
+        return circumcenter;
     }
 
     @Override
