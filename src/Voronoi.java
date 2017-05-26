@@ -10,6 +10,10 @@ import java.awt.event.MouseListener;
  */
 public class Voronoi extends javax.swing.JApplet
         implements Runnable, ActionListener, MouseListener {
+
+    public static void main (String[] args) {
+        
+    }
     public void init () {
 
     }
