@@ -58,5 +58,85 @@ public class Triangulation  extends AbstractSet<Triangle> {
         }
         return list;
     }
+    public Triangle locate (Pnt point) {
+        Triangle triangle = mostRecent;
+        if (!this.contains(triangle)) triangle = null;
 
+        Set<Triangle> visited = new HashSet<Triangle>();
+        while (triangle != null) {
+            if (visited.contains(triangle)) { // This should never happen
+                System.out.println("Warning: Caught in a locate loop");
+                break;
+            }
+            visited.add(triangle);
+            Pnt corner = point.isOutside(triangle.toArray(new Pnt[0]));
+            if (corner == null) return triangle;
+            triangle = this.neighborOpposite(corner, triangle);
+        }
+        System.out.println("Warning: Checking all triangles for " + point);
+        for (Triangle tri: this) {
+            if (point.isOutside(tri.toArray(new Pnt[0])) == null) return tri;
+        }
+        System.out.println("Warning: No triangle holds " + point);
+        return null;
+    }
+
+    public void delaunayPlace (Pnt site) {
+        Triangle triangle = locate(site);
+        if (triangle == null)
+            throw new IllegalArgumentException("No containing triangle");
+        if (triangle.contains(site)) return;
+        Set<Triangle> cavity = getCavity(site, triangle);
+        mostRecent = update(site, cavity);
+    }
+    private Set<Triangle> getCavity (Pnt site, Triangle triangle) {
+        Set<Triangle> encroached = new HashSet<Triangle>();
+        Queue<Triangle> toBeChecked = new LinkedList<Triangle>();
+        Set<Triangle> marked = new HashSet<Triangle>();
+        toBeChecked.add(triangle);
+        marked.add(triangle);
+        while (!toBeChecked.isEmpty()) {
+            triangle = toBeChecked.remove();
+            if (site.vsCircumcircle(triangle.toArray(new Pnt[0])) == 1)
+                continue;
+            encroached.add(triangle);
+            for (Triangle neighbor: triGraph.neighbors(triangle)){
+                if (marked.contains(neighbor)) continue;
+                marked.add(neighbor);
+                toBeChecked.add(neighbor);
+            }
+        }
+        return encroached;
+    }
+
+    private Triangle update (Pnt site, Set<Triangle> cavity) {
+        Set<Set<Pnt>> boundary = new HashSet<Set<Pnt>>();
+        Set<Triangle> theTriangles = new HashSet<Triangle>();
+
+        for (Triangle triangle: cavity) {
+            theTriangles.addAll(neighbors(triangle));
+            for (Pnt vertex: triangle) {
+                Set<Pnt> facet = triangle.facetOpposite(vertex);
+                if (boundary.contains(facet)) boundary.remove(facet);
+                else boundary.add(facet);
+            }
+        }
+        theTriangles.removeAll(cavity);
+        for (Triangle triangle: cavity) triGraph.remove(triangle);
+
+        Set<Triangle> newTriangles = new HashSet<Triangle>();
+        for (Set<Pnt> vertices: boundary) {
+            vertices.add(site);
+            Triangle tri = new Triangle(vertices);
+            triGraph.add(tri);
+            newTriangles.add(tri);
+        }
+
+        theTriangles.addAll(newTriangles);
+        for (Triangle triangle: newTriangles)
+            for (Triangle other: theTriangles)
+                if (triangle.isNeighbor(other))
+                    triGraph.add(triangle, other);
+        return newTriangles.iterator().next();
+    }
 }
