@@ -77,6 +77,29 @@ public class Voronoi extends javax.swing.JApplet
             colorTable.put(item, color);
             return color;
         }
+
+        public void draw (Pnt point) {
+            int r = pointRadius;
+            int x = (int) point.coord(0);
+            int y = (int) point.coord(1);
+            g.fillOval(x-r, y-r, r+r, r+r);
+        }
+
+        public void draw (Pnt[] polygon, Color fillColor) {
+            int[] x = new int[polygon.length];
+            int[] y = new int[polygon.length];
+            for (int i = 0; i < polygon.length; i++) {
+                x[i] = (int) polygon[i].coord(0);
+                y[i] = (int) polygon[i].coord(1);
+            }
+            if (fillColor != null) {
+                Color temp = g.getColor();
+                g.setColor(fillColor);
+                g.fillPolygon(x, y, polygon.length);
+                g.setColor(temp);
+            }
+            g.drawPolygon(x, y, polygon.length);
+        }
     }
 }
 
