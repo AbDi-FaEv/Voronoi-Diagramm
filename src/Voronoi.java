@@ -14,28 +14,64 @@ import java.util.Random;
 public class Voronoi extends javax.swing.JApplet
         implements Runnable, ActionListener, MouseListener {
 
-    public static void main (String[] args) {
+    private boolean debug = false;
+    private Component currentSwitch = null;
 
+    private static String windowTitle = "Вороной";
+    private JButton clearButton = new JButton("Очистить");
+    private VoronoiPanel voronoiPanel = new VoronoiPanel(this);
+
+    public static void main (String[] args) {
+        Voronoi applet = new Voronoi();
+        applet.init();
+        JFrame dWindow = new JFrame();
+        dWindow.setSize(700, 500);
+        dWindow.setTitle(windowTitle);
+        dWindow.setLayout(new BorderLayout());
+        dWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        dWindow.add(applet, "Center");
+        dWindow.setVisible(true);
     }
     public void init () {
-
+        try {SwingUtilities.invokeAndWait(this);}
+        catch (Exception e) {System.err.println("Initialization failure");}
     }
     public void run () {
+        setLayout(new BorderLayout());
+        JPanel switchPanel = new JPanel();
+        switchPanel.add(clearButton);
+        this.add(switchPanel, "South");
 
+        voronoiPanel.setBackground(Color.gray);
+        this.add(voronoiPanel, "Center");
+
+        clearButton.addActionListener(this);
+        voronoiPanel.addMouseListener(this);
     }
     public void actionPerformed(ActionEvent e) {
-
+        if (debug)
+            System.out.println(((AbstractButton)e.getSource()).getText());
+        if (e.getSource() == clearButton) voronoiPanel.clear();
+        voronoiPanel.repaint();
     }
     public void mouseEntered(MouseEvent e) {
-
+        currentSwitch = e.getComponent();
+        if (currentSwitch instanceof JLabel) voronoiPanel.repaint();
+        else currentSwitch = null;
     }
 
     public void mouseExited(MouseEvent e) {
-
+        currentSwitch = null;
+        if (e.getComponent() instanceof JLabel) voronoiPanel.repaint();
     }
 
     public void mousePressed(MouseEvent e) {
-
+        if (e.getSource() != voronoiPanel) return;
+        Pnt point = new Pnt(e.getX(), e.getY());
+        if (debug ) System.out.println("Click " + point);
+        voronoiPanel.addSite(point);
+        voronoiPanel.repaint();
     }
 
     public void mouseReleased(MouseEvent e) {}
