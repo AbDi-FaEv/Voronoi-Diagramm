@@ -100,6 +100,20 @@ public class Voronoi extends javax.swing.JApplet
             }
             g.drawPolygon(x, y, polygon.length);
         }
+        public void paintComponent (Graphics g) {
+            super.paintComponent(g);
+            this.g = g;
+            Color temp = g.getColor();
+            g.setColor(voronoiColor);
+            g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            g.setColor(temp);
+            colorTable.clear();
+            drawAllVoronoi(false, true);
+            temp = g.getColor();
+            g.setColor(Color.white);
+            drawAllVoronoi(false, false);
+            g.setColor(temp);
+        }
     }
 }
 
